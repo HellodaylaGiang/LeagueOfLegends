@@ -5,6 +5,7 @@ import java.util.List;
 import com.example.demo.service.validator.StrongPassword;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -36,7 +37,7 @@ public class User {
     @JoinColumn(name = "role_id")
     Role role;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     List<Order> orders;
 
     @OneToOne(mappedBy = "user")
