@@ -3,9 +3,11 @@ package com.example.demo.domain.dto;
 import java.util.List;
 import java.util.Optional;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 public class ProductCriteriaDTO {
     private Optional<String> page;
     private Optional<List<String>> factory;
