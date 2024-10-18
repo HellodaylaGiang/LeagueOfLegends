@@ -1,0 +1,28 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: update
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:3306/lienminhhuyenthoai
+    username: sa
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    show-sql: true
+  application:
+    name: demo
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+  session:
+    store-type: jdbc
+    timeout: 30m
+    jdbc:
+      initialize-schema: always
+      # table-name: SPRING_SESSION
+
+logging:
+  level:
+    org:
+      springframework:
+        security: DEBUG
