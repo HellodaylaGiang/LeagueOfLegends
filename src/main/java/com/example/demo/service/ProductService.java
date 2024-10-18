@@ -65,6 +65,11 @@ public class ProductService {
             combinedSpec = combinedSpec.and(currentSpecs);
         }
 
+        // public static Specification<Product> matchListTarget(List<String> target) {
+        // return (root, query, criteriaBuilder) ->
+        // criteriaBuilder.in(root.get(Product_.TARGET)).value(target);
+        // }
+
         if (productCriteriaDTO.getFactory() != null &&
                 productCriteriaDTO.getFactory().isPresent()) {
             Specification<Product> currentSpecs = ProductSpec.matchListFactory(productCriteriaDTO.getFactory().get());

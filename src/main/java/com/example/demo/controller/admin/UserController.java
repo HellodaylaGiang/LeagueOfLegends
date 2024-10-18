@@ -86,7 +86,7 @@ public class UserController {
     @PostMapping("/admin/user/create")
     public String createUserPage1(@Valid @ModelAttribute("newUser") User u,
             BindingResult bindingResult,
-            @RequestParam("hoidanitFile") MultipartFile file) {
+            @RequestParam("uploadFile") MultipartFile file) {
 
         if (bindingResult.hasErrors()) {
             return "/admin/user/create";
@@ -128,7 +128,7 @@ public class UserController {
     @PostMapping("/admin/user/update")
     public String getMethodName(
             @ModelAttribute("newUser") User u,
-            @RequestParam("hoidanitFile") MultipartFile file) {
+            @RequestParam("uploadFile") MultipartFile file) {
         User user = this.userService.findUserById(u.getId());
         String avatar = this.uploadService.handSaveUploadFile(file, "img");
 

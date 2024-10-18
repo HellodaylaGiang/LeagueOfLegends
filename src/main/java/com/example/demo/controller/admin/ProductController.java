@@ -80,7 +80,7 @@ public class ProductController {
     @PostMapping("/admin/product/create")
     public String getMethodName2(@Valid @ModelAttribute("newProduct") Product p,
             BindingResult bindingResult,
-            @RequestParam("hoidanitFile") MultipartFile file) {
+            @RequestParam("uploadFile") MultipartFile file) {
         String avatar = this.uploadService.handSaveUploadFile(file, "img");
         p.setImage(avatar);
         if (bindingResult.hasErrors()) {
@@ -128,7 +128,7 @@ public class ProductController {
     @PostMapping("/admin/product/update")
     public String postMethodName7(@Valid @ModelAttribute("newProduct") Product p,
             BindingResult bindingResult,
-            @RequestParam("hoidanitFile") MultipartFile file,
+            @RequestParam("uploadFile") MultipartFile file,
             Model model) {
 
         if (bindingResult.hasErrors()) {
