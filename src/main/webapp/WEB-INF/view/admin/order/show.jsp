@@ -49,6 +49,7 @@
                                                     <th scope="col">Total Price</th>
                                                     <th scope="col">User</th>
                                                     <th scope="col">Status</th>
+                                                    <th scope="col">Payment</th>
                                                     <th scope="col">Action</th>
                                                 </tr>
                                             </thead>
@@ -62,6 +63,11 @@
                                                         </td>
                                                         <td>${o.user.fullName}</td>
                                                         <td>${o.status}</td>
+                                                        <td>
+                                                            <div>Status: ${o.paymentStatus}</div>
+                                                            <div>Ref: ${o.paymentRef}</div>
+                                                            <div>Method: ${o.paymentMethod}</div>
+                                                        </td>
                                                         <td>
                                                             <a href="/admin/order/${o.id}"
                                                                 class="btn btn-success">View</a>

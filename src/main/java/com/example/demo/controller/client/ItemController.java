@@ -1,8 +1,14 @@
 package com.example.demo.controller.client;
 
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
+
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -35,6 +41,7 @@ import com.example.demo.repository.CartRepository;
 import com.example.demo.service.ImageService;
 import com.example.demo.service.ProductService;
 import com.example.demo.service.UserService;
+import com.example.demo.service.VNPayService;
 import com.example.demo.service.skillservice.ESkillService;
 import com.example.demo.service.skillservice.ISkillService;
 import com.example.demo.service.skillservice.QSkillService;
@@ -43,8 +50,10 @@ import com.example.demo.service.skillservice.WSkillService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
 
 @Controller
+@RequiredArgsConstructor
 public class ItemController {
 
     @Autowired
@@ -63,18 +72,7 @@ public class ItemController {
     private final WSkillService wSkillService;
     private final ESkillService eSkillService;
     private final RSkillService rSkillService;
-
-    public ItemController(ProductService productService, ImageService imageService,
-            ISkillService iSkillService, QSkillService qSkillService, WSkillService wSkillService,
-            ESkillService eSkillService, RSkillService rSkillService) {
-        this.productService = productService;
-        this.imageService = imageService;
-        this.iSkillService = iSkillService;
-        this.qSkillService = qSkillService;
-        this.wSkillService = wSkillService;
-        this.eSkillService = eSkillService;
-        this.rSkillService = rSkillService;
-    }
+    private final VNPayService vNPayService;
 
     @GetMapping("/client/product/{id}")
     public String requestMethodName1(@PathVariable("id") long id, Model model) {
@@ -190,18 +188,36 @@ public class ItemController {
             HttpServletRequest request,
             @RequestParam("receiverName") String receiverName,
             @RequestParam("receiverAddress") String receiverAddress,
-            @RequestParam("receiverPhone") String receiverPhone) {
+            @RequestParam("receiverPhone") String receiverPhone,
+            @RequestParam("paymentMethod") String paymentMethod,
+            @RequestParam("totalPrice") String totalPrice) throws NumberFormatException, UnsupportedEncodingException {
 
         User currentUser = new User();
         HttpSession session = request.getSession(false);
         currentUser.setId((long) session.getAttribute("id"));
 
-        this.productService.handlePlaceOrder(currentUser, session, receiverName, receiverAddress, receiverPhone);
+        final String uuid = UUID.randomUUID().toString().replace("-", "");
+
+        this.productService.handlePlaceOrder(currentUser, session, receiverName, receiverAddress, receiverPhone,
+                paymentMethod, uuid);
+        if (!paymentMethod.equals("COD")) {
+            String ip = this.vNPayService.getIpAddress(request);
+            String vnpUrl = this.vNPayService.generateVNPayURL(Double.parseDouble(totalPrice), uuid, ip);
+
+            return "redirect:" + vnpUrl;
+        }
         return "redirect:/order-success";
     }
 
     @GetMapping("/order-success")
-    public String getMethodName() {
+    public String getMethodName(
+            @RequestParam("vnp_ResponseCode") Optional<String> vnpayResponseCode,
+            @RequestParam("vnp_TxnRef") Optional<String> paymentRef) {
+
+        if (vnpayResponseCode.isPresent() && paymentRef.isPresent()) {
+            String paymentStatus = vnpayResponseCode.get().equals("00") ? "PAYMENT_SUCCEED" : "PAYMENT_FAILED";
+            this.productService.updatePaymentStatus(paymentRef.get(), paymentStatus);
+        }
         return "/client/cart/order-success";
     }
 
@@ -251,4 +267,41 @@ public class ItemController {
         model.addAttribute("queryString", qs);
         return "/client/product/filter";
     }
+
+    public static String hmacSHA512(final String key, final String data) {
+        try {
+
+            if (key == null || data == null) {
+                throw new NullPointerException();
+            }
+            final Mac hmac512 = Mac.getInstance("HmacSHA512");
+            byte[] hmacKeyBytes = key.getBytes();
+            final SecretKeySpec secretKey = new SecretKeySpec(hmacKeyBytes, "HmacSHA512");
+            hmac512.init(secretKey);
+            byte[] dataBytes = data.getBytes(StandardCharsets.UTF_8);
+            byte[] result = hmac512.doFinal(dataBytes);
+            StringBuilder sb = new StringBuilder(2 * result.length);
+            for (byte b : result) {
+                sb.append(String.format("%02x", b & 0xff));
+            }
+            return sb.toString();
+
+        } catch (Exception ex) {
+            return "";
+        }
+    }
+
+    public static String getIpAddress(HttpServletRequest request) {
+        String ipAdress;
+        try {
+            ipAdress = request.getHeader("X-FORWARDED-FOR");
+            if (ipAdress == null) {
+                ipAdress = request.getRemoteAddr();
+            }
+        } catch (Exception e) {
+            ipAdress = "Invalid IP:" + e.getMessage();
+        }
+        return ipAdress;
+    }
+
 }

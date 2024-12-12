@@ -42,4 +42,7 @@ public class Order {
     private String receiverAddress;
     private String receiverPhone;
     private String status;
+    private String paymentRef;
+    private String paymentStatus;
+    private String paymentMethod;
 }

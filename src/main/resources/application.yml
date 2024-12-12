@@ -26,3 +26,11 @@ logging:
     org:
       springframework:
         security: DEBUG
+
+test:
+  vnpay:
+    tmn-code: D8875VDV
+    hash-secret: SFY7KKSL65JM46HU4B2DZMV4KOGNOIEK
+    vnp-url: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+    vnp-return-url: http://localhost:8080/order-success
+
